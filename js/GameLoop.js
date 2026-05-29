@@ -8,6 +8,7 @@ var jumpcount = 0;
 var frictionX = 0.8;
 var frictionY = 0.8;
 var gravity = 1;
+var score = 0;
 
 canvas = document.getElementById("canvas");
 context = canvas.getContext("2d");
@@ -18,16 +19,36 @@ platform0 = new GameObject();
 platform0.width = 400;
 platform0.y = player.y + player.height/2 + platform0.height/2;
 platform0.color = "#66ff33";
+platform1 = new GameObject();
+platform1.width = 400;
+platform1.x = 115;
+platform1.y = player.y ;
+platform1.color = "#66ff33";
+platform2 = new GameObject();
+platform2.width = 400;
+platform2.x = 910;
+platform2.y = player.y ;
+platform2.color = "#66ff33";
 npc1 = new GameObject(300,canvas.height/2,100,100,"#1eaeff");
-//npc2 = new GameObject(600,canvas.height/2,100,100,"#df1eaf");
-//npc3 = new GameObject(900,canvas.height/2,100,100,"#00ff00"); */
 npc1.vx = 2;
 npc1.active = true;
 player.destroy = 30;
 npc1.destroy = 30;
-//player.vy = 2;
 
-timer = setInterval(animate, interval);
+context.fillStyle = "red";
+context.fillText("EVIL BALL",400,100);
+context.fillStyle = "black";
+context.fillText("To begin click the screen!",300,200);
+context.fillText("w,a,d to move (pressing w twice allows you to double jump)", 100, 550);
+context.fillText("Don't touch the enemy while not red hot or you'll lose!", 150, 425);
+context.fillText("Kill the enemy to gain while red hot to gain Score!", 200, 300)
+context.fillText("Shift to become red hot + heavy, allows you to destroy platforms + enemies", 10, 650);
+context.fillText("You can only be red hot + heavy for a limited time before you lose!", 60, 750);
+
+canvas.addEventListener("click", function (e)
+{
+    timer = setInterval(animate, interval);
+}, { once: true });
 
 function animate()
 {
@@ -35,7 +56,8 @@ function animate()
     gravity = 1;
 
     context.fillStyle = "black";
-    context.fillText("Self destruct in: " + player.destroy,50,50);
+    context.fillText("Overheat in: " + player.destroy,50,50);
+    context.fillText("Score: " + score,800,50);
 
     if (w && jumpcount < 2)
     {
@@ -64,11 +86,18 @@ function animate()
         gravity = 2;
         player.destroy--;
         player.color = "#ff0000";
-        if (platform0.hitTestPoint(player.bottom()))
+        if (player.collisionCheck(platform0))
         {
             platform0.x = 10000;
         }
-
+        if (player.collisionCheck(platform1))
+        {
+            platform1.x = 10000;
+        }
+        if (player.collisionCheck(platform2))
+        {
+            platform2.x = 10000;
+        }
     }
     else
     {
@@ -78,6 +107,7 @@ function animate()
     if (npc1.active && shift && player.collisionCheck(npc1))
     {
         npc1.active = false;
+        score++;
     }
     else if (npc1.active && player.collisionCheck(npc1))
     {
@@ -165,6 +195,34 @@ function animate()
         npc1.vy = 0;
     }
 
+    while(platform1.hitTestPoint(player.bottom()) && player.vy >= 0)
+    {
+        player.y--;
+        player.vy = 0;
+        player.canJump = true;
+        jumpcount = 0;
+    }
+
+    while(platform1.hitTestPoint(npc1.bottom()) && npc1.vy >= 0)
+    {
+        npc1.y--;
+        npc1.vy = 0;
+    }
+
+    while(platform2.hitTestPoint(player.bottom()) && player.vy >= 0)
+    {
+        player.y--;
+        player.vy = 0;
+        player.canJump = true;
+        jumpcount = 0;
+    }
+
+    while(platform2.hitTestPoint(npc1.bottom()) && npc1.vy >= 0)
+    {
+        npc1.y--;
+        npc1.vy = 0;
+    }
+
     // while(platform0.hitTestPoint(player.top()))
     // {
     //     player.y++;
@@ -173,27 +231,6 @@ function animate()
 
     player.move();
     npc1.move();
-
-    if (player.x > canvas.width + player.width/2)
-    {
-       // player.vx *= -1;
-        player.color = "#40ff00";
-    }
-    if (player.x < 0 + player.width/2)
-    {
-       // player.vx = 2;
-        player.color = "#ff0000";
-    }
-    if (player.y > canvas.height + player.height/2)
-    {
-        //player.vy *= -1;
-        player.color = "#ff40b6";
-    }
-    if (player.y < 0 + player.height/2)
-    {
-       // player.vy = 2;
-        player.color = "#0000ff";
-    }
 
 
     player.jumpSpeed = -20
@@ -219,6 +256,8 @@ function animate()
     player.drawCircle();
     player.drawDebug();
     platform0.drawRect();
+    platform1.drawRect();
+    platform2.drawRect();
     if (npc1.active == true)
     {
         npc1.drawCircle();
